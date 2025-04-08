@@ -5,11 +5,11 @@ body {
 [type="number"] {
 	width: 4em;
 }
-/*
+
 .game, .result, .reset, .error-message {
 	display: none;
 }
-*/
+
 
 .td-style {
     width: 100px;
