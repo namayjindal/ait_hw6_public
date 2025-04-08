@@ -40,9 +40,15 @@ document.addEventListener('DOMContentLoaded', function() {
         const maxTurns = parseInt(maxTurnsInput.value);
         const cardFaces = cardFacesInput.value.trim();
         
+        // Check if inputs are numbers
+        if (isNaN(totalCards) || isNaN(maxTurns)) {
+            showErrorMessage("Please enter valid numbers for cards and turns.");
+            return;
+        }
+        
         // Validation checks
         if (!isValidCardCount(totalCards)) {
-            showErrorMessage("Number of cards should be an even number greater than 2 and less than or equal to 36.");
+            showErrorMessage("Number of cards should be an even number between 4 and 36.");
             return;
         }
         
@@ -108,6 +114,12 @@ document.addEventListener('DOMContentLoaded', function() {
         
         errorSection.style.display = 'block';
         startSection.style.display = 'none';
+        
+        // Add a shake animation to the error message for better visibility
+        errorMessageElement.classList.add('shake-animation');
+        setTimeout(() => {
+            errorMessageElement.classList.remove('shake-animation');
+        }, 500);
     }
     
     // Hide error message
@@ -212,10 +224,14 @@ document.addEventListener('DOMContentLoaded', function() {
         // Clear existing content
         gameSection.innerHTML = '';
         
-        // Add turn counter
+        // Add turn counter with improved styling
         const turnCounter = document.createElement('div');
         turnCounter.className = 'turn-counter';
         turnCounter.textContent = `TURN ${gameState.currentTurn}/${maxTurns}`;
+        turnCounter.style.fontSize = '1.5em';
+        turnCounter.style.fontWeight = 'bold';
+        turnCounter.style.margin = '20px 0';
+        turnCounter.style.color = '#333';
         gameSection.appendChild(turnCounter);
         
         // Create card grid
@@ -223,7 +239,7 @@ document.addEventListener('DOMContentLoaded', function() {
         cardGrid.className = 'card-grid';
         gameSection.appendChild(cardGrid);
         
-        // Calculate grid dimensions
+        // Calculate grid dimensions for optimal layout
         let rows, cols;
         if (totalCards === 4) {
             rows = 2; cols = 2;
@@ -260,20 +276,35 @@ document.addEventListener('DOMContentLoaded', function() {
         cardGrid.style.margin = '20px auto';
         cardGrid.style.maxWidth = `${cols * 100}px`;
         
-        // Create cards
+        // Create cards with improved styling
         for (let i = 0; i < totalCards; i++) {
             const card = document.createElement('div');
             card.className = 'card';
             card.dataset.index = i;
             card.dataset.value = cards[i];
             card.style.height = '100px';
-            card.style.background = '#2196F3';
-            card.style.borderRadius = '5px';
+            card.style.background = 'linear-gradient(145deg, #2196F3, #1E88E5)';
+            card.style.borderRadius = '8px';
             card.style.display = 'flex';
             card.style.justifyContent = 'center';
             card.style.alignItems = 'center';
             card.style.cursor = 'pointer';
             card.style.fontSize = '2em';
+            card.style.boxShadow = '0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23)';
+            card.style.transition = 'transform 0.3s, box-shadow 0.3s';
+            
+            // Add hover effect
+            card.addEventListener('mouseover', function() {
+                if (!this.classList.contains('matched') && !gameState.flippedCards.includes(parseInt(this.dataset.index))) {
+                    this.style.transform = 'scale(1.05)';
+                    this.style.boxShadow = '0 6px 12px rgba(0,0,0,0.25), 0 5px 5px rgba(0,0,0,0.22)';
+                }
+            });
+            
+            card.addEventListener('mouseout', function() {
+                this.style.transform = 'scale(1)';
+                this.style.boxShadow = '0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23)';
+            });
             
             // Add click event listener to each card
             card.addEventListener('click', handleCardClick);
@@ -281,9 +312,12 @@ document.addEventListener('DOMContentLoaded', function() {
             cardGrid.appendChild(card);
         }
         
-        // Message area for "Match" or "No Match"
+        // Message area for "Match" or "No Match" with improved styling
         const messageArea = document.createElement('div');
         messageArea.className = 'message-area';
+        messageArea.style.margin = '20px 0';
+        messageArea.style.fontSize = '1.2em';
+        messageArea.style.minHeight = '80px';
         gameSection.appendChild(messageArea);
     }
     
@@ -302,8 +336,13 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Flip the card
-        flipCard(card);
+        // Add flip animation
+        card.style.transform = 'rotateY(180deg)';
+        setTimeout(() => {
+            // Flip the card
+            flipCard(card);
+            card.style.transform = 'rotateY(0deg)';
+        }, 150);
         
         // Add to flipped cards
         gameState.flippedCards.push(cardIndex);
@@ -321,15 +360,39 @@ document.addEventListener('DOMContentLoaded', function() {
             // Check if the cards match
             const isMatch = firstCard.dataset.value === secondCard.dataset.value;
             
-            // Update message area
+            // Update message area with styled message
             const messageArea = document.querySelector('.message-area');
-            messageArea.innerHTML = isMatch ? 
-                '<p>Match!</p>' : 
-                '<p>No Match</p>';
+            if (isMatch) {
+                messageArea.innerHTML = `
+                    <p style="color: #4CAF50; font-weight: bold; font-size: 1.5em;">Match!</p>
+                `;
+            } else {
+                messageArea.innerHTML = `
+                    <p style="color: #F44336; font-weight: bold; font-size: 1.5em;">No Match</p>
+                `;
+            }
             
-            // Add OK button
+            // Add styled OK button
             const okButton = document.createElement('button');
             okButton.textContent = 'OK';
+            okButton.style.padding = '8px 20px';
+            okButton.style.fontSize = '1em';
+            okButton.style.background = '#2196F3';
+            okButton.style.color = 'white';
+            okButton.style.border = 'none';
+            okButton.style.borderRadius = '4px';
+            okButton.style.cursor = 'pointer';
+            okButton.style.marginTop = '10px';
+            okButton.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
+            
+            okButton.addEventListener('mouseover', function() {
+                this.style.background = '#1976D2';
+            });
+            
+            okButton.addEventListener('mouseout', function() {
+                this.style.background = '#2196F3';
+            });
+            
             okButton.addEventListener('click', () => {
                 // Increment turn
                 gameState.currentTurn++;
@@ -342,11 +405,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (isMatch) {
                     firstCard.classList.add('matched');
                     secondCard.classList.add('matched');
+                    
+                    // Add a subtle glow to matched cards
+                    firstCard.style.boxShadow = '0 0 8px 2px rgba(76, 175, 80, 0.6)';
+                    secondCard.style.boxShadow = '0 0 8px 2px rgba(76, 175, 80, 0.6)';
+                    
                     gameState.matchedCards += 2;
                 } else {
-                    // If no match, flip cards back
-                    unflipCard(firstCard);
-                    unflipCard(secondCard);
+                    // If no match, flip cards back with animation
+                    setTimeout(() => {
+                        firstCard.style.transform = 'rotateY(180deg)';
+                        secondCard.style.transform = 'rotateY(180deg)';
+                        
+                        setTimeout(() => {
+                            unflipCard(firstCard);
+                            unflipCard(secondCard);
+                            firstCard.style.transform = 'rotateY(0deg)';
+                            secondCard.style.transform = 'rotateY(0deg)';
+                        }, 150);
+                    }, 300);
                 }
                 
                 // Clear flipped cards array
@@ -376,7 +453,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Unflip a card to hide its value
     function unflipCard(card) {
         card.textContent = '';
-        card.style.background = '#2196F3';
+        card.style.background = 'linear-gradient(145deg, #2196F3, #1E88E5)';
     }
     
     // Check if the game is over
@@ -391,15 +468,71 @@ document.addEventListener('DOMContentLoaded', function() {
             // Determine win/lose
             const hasWon = gameState.matchedCards === gameState.totalCards;
             
-            // Show result message
+            // Show result message with styling
             resultSection.innerHTML = `
-                <h2>${hasWon ? 'You Win!' : 'Game Over'}</h2>
-                <p>TURN ${gameState.currentTurn}/${gameState.maxTurns}</p>
-                <p>${gameState.matchedCards} out of ${gameState.totalCards} cards matched</p>
+                <h2 style="color: ${hasWon ? '#4CAF50' : '#F44336'}; font-size: 2em;">
+                    ${hasWon ? '🎉 You Win! 🎉' : '😞 Game Over 😞'}
+                </h2>
+                <p style="font-size: 1.2em;">TURN ${gameState.currentTurn}/${gameState.maxTurns}</p>
+                <p style="font-size: 1.2em;">${gameState.matchedCards} out of ${gameState.totalCards} cards matched</p>
+                <button class="play-again-btn" style="
+                    padding: 10px 25px;
+                    font-size: 1.2em;
+                    background: #4CAF50;
+                    color: white;
+                    border: none;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    margin-top: 20px;
+                    box-shadow: 0 3px 6px rgba(0,0,0,0.16);
+                ">Play Again</button>
             `;
+            
+            // Add event listener to play again button
+            const playAgainButton = document.querySelector('.play-again-btn');
+            playAgainButton.addEventListener('mouseover', function() {
+                this.style.background = '#388E3C';
+            });
+            
+            playAgainButton.addEventListener('mouseout', function() {
+                this.style.background = '#4CAF50';
+            });
+            
+            playAgainButton.addEventListener('click', resetGame);
             
             // Disable card flipping
             gameState.canFlip = false;
+            
+            // Save the game score to localStorage (for extra credit)
+            const lastScore = {
+                turns: gameState.currentTurn,
+                maxTurns: gameState.maxTurns,
+                matched: gameState.matchedCards,
+                totalCards: gameState.totalCards,
+                hasWon: hasWon
+            };
+            
+            localStorage.setItem('memoremojiLastScore', JSON.stringify(lastScore));
         }
     }
+    
+    // Add CSS rules programmatically for animations
+    const style = document.createElement('style');
+    style.textContent = `
+        .card {
+            transition: transform 0.3s ease-in-out, background 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .shake-animation {
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+        }
+        
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+    `;
+    document.head.appendChild(style);
 });
